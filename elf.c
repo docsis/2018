@@ -18,6 +18,14 @@ static int phdr_num;
 static char *strtab;
 static char *sectstr;	/* sh string table */
 
+struct section {
+	int id;
+	char *data;
+	int len;
+};
+
+static struct section sects[100];
+
 
 void die(char *s)
 {
@@ -49,9 +57,11 @@ char *printsht(int type)
 	return "";
 }
 
-void *read_alloc_data(int off, int siz)
+void *rd_alloc(int off, int siz, char *s)
 {
 	void *buf;
+
+	fprintf(stderr, "%06x %04x %s\n", off, siz+off, s);
 
 	fseek(infile, off, SEEK_SET);
 	buf = malloc(siz);
@@ -106,26 +116,32 @@ void parse_file(void)
 
 	fread(&ehdr, sizeof(ehdr), 1, infile); 
 
-	shdr = read_alloc_data(ehdr.e_shoff, sizeof(Elf64_Shdr) * ehdr.e_shnum);
-	if (ehdr.e_shstrndx != SHN_UNDEF) {
-		sectstr = read_alloc_data(shdr[ehdr.e_shstrndx].sh_offset, 
-			shdr[ehdr.e_shstrndx].sh_size);
-	}
+	shdr = rd_alloc(ehdr.e_shoff, sizeof(Elf64_Shdr) * ehdr.e_shnum, "shdr");
 
 	if (ehdr.e_phoff) {
-		phdr = read_alloc_data(ehdr.e_phoff, sizeof(Elf64_Phdr)*ehdr.e_phnum);
+		phdr = rd_alloc(ehdr.e_phoff, sizeof(Elf64_Phdr)*ehdr.e_phnum, "phdr");
 		phdr_num = ehdr.e_phnum;
 	}
 
-	for (int i=0; i < ehdr.e_shnum; i++) {
+	for (int i=1; i < ehdr.e_shnum; i++) {
 		if (shdr[i].sh_type == SHT_STRTAB) {
-			strtab = read_alloc_data(shdr[i].sh_offset, shdr[i].sh_size);
+			if (i == ehdr.e_shstrndx) {
+				sectstr = rd_alloc(shdr[i].sh_offset, shdr[i].sh_size, "sc_strtab_h");
+				sects[i].data = sectstr;
+			} else {
+				strtab = rd_alloc(shdr[i].sh_offset, shdr[i].sh_size, "sc_strtab");
+				sects[i].data = strtab;
+			}
+			sects[i].len = shdr[i].sh_size;
+		} else if (shdr[i].sh_type == SHT_SYMTAB) {
+			syms = rd_alloc(shdr[i].sh_offset, shdr[i].sh_size, "sc_symtab");
+			syms_num = shdr[i].sh_size/sizeof(Elf64_Sym);
+			sects[i].data = syms;
+		} else {
+			sects[i].data = rd_alloc(shdr[i].sh_offset, shdr[i].sh_size, "sc_");
 		}
 
-		if (shdr[i].sh_type == SHT_SYMTAB) {
-			syms = read_alloc_data(shdr[i].sh_offset, shdr[i].sh_size);
-			syms_num = shdr[i].sh_size/sizeof(Elf64_Sym);
-		}
+		sects[i].len = shdr[i].sh_size;
 	}
 }
 
