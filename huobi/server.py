@@ -33,6 +33,12 @@ class MyService(rpyc.Service):
     def exposed_orders_list(self, symbol, states):
         return hb.orders_list(symbol, states)
 
+    def exposed_get_balance(self, acct_id):
+        return hb.get_balance(acct_id)
+
+    def exposed_send_order(self, amount, source, symbol, _type, price):
+        return hb.send_order(amount, source, symbol, _type, price)
+
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer
     t = ThreadedServer(MyService, port=18861)
