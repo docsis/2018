@@ -1,15 +1,13 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 import datetime
 import time
-import pickle
 import pandas as pd
+from comm import *
 
 KLINE_TT_COLS = ['id', 'open', 'high', 'low', 'close', 'amount']
 
-read_file = open('kline.txt','rb')
-d = pickle.load(read_file)
-read_file.close()
-
+d = loaddict("./", "pickle")
 
 def change(v):
     tt = time.localtime(v)

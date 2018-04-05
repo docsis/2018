@@ -4,13 +4,10 @@ import datetime
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
 from matplotlib.pylab import date2num
-import pickle
+from comm import *
 
 
-read_file = open('kline.txt','rb')
-d = pickle.load(read_file)
-read_file.close()
-
+d = loaddict("./", "pickle")
 data_list = []
 
 for block in d:
