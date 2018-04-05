@@ -102,6 +102,7 @@ def get_balance(acct_id=None):
         try:
             accounts = get_accounts()
             acct_id = ACCOUNT_ID = accounts['data'][0]['id']
+            print 'get', acct_id
         except BaseException as e:
             print 'get acct_id error.%s' % e
             acct_id = ACCOUNT_ID
@@ -418,8 +419,8 @@ if __name__ == '__main__':
     #data = get_kline("btcusdt", "5min", 10)
     #print data['data'][0]
     #print get_trade("btcusdt")
-    #print get_balance()
-    #print ACCOUNT_ID
+    print get_balance()
+    print ACCOUNT_ID
 
     #t = orders_list("btcusdt", "filled")
     #print t['data'][0]
