@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/python
 
 import rpyc
 import HuobiService as hb
@@ -38,6 +38,9 @@ class MyService(rpyc.Service):
 
     def exposed_send_order(self, amount, source, symbol, _type, price):
         return hb.send_order(amount, source, symbol, _type, price)
+
+    def exposed_get_trade(self, symbol):
+        return hb.get_trade(symbol)
 
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer
