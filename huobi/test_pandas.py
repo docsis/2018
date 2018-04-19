@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 from comm import *
 
-
-df = read_pickle(".", "pickle")
+df = read_pickle("./data/", "5min.pickle")
 save_to_csv(df)
 
 
@@ -21,9 +20,10 @@ def run(high, low, unit_b=0.002, unit_s=0.0055):
     buy_orders = []
     sell_orders = []
 
-    start = 1000 
-    end =-1000 
+    start = 0 
+    end =-1 
     cnt = 0
+
 
     for idx in df.index[start:end]:
         try:

@@ -1,4 +1,6 @@
 *.pyc
 kk.py
 
+data/
 *.swp
+*.csv

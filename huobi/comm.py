@@ -37,9 +37,9 @@ def read_pickle(path, extand):
 
     pieces = []
     for f in h:
-        with open(f,'rb') as f:
+        with open(path+f,'rb') as f:
             d1 = pickle.load(f)
-        frame = DataFrame(d1[2:], columns=KLINE_TT_COLS,)
+        frame = DataFrame(d1[2:], columns=KLINE_TT_COLS)
         pieces.append(frame)
     df = pd.concat(pieces)
     df = df.set_index('id')
