@@ -39,21 +39,31 @@ class Trade(object):
         self.logger = Log()
         self.logger.write("START")
         self.vbalance = {}
+        self.price = {}
+        self.price['usdtusdt'] = 1.0
+        self.cnt_usdt = 0
 
     def update_data(self):
-        #d = self.c.root.get_trade("btcusdt")
-        #self.btc_price = float(d['tick']['data'][0]['price'])
-
         d = self.c.root.get_balance(self.accid)
-        for i in d['data']['list'][:12]:
-            if i['balance'] != "0.000000000000000000":
-                self.vbalance[i['currency']] = (i['type'], i['balance'])
+        for i in d['data']['list'][:16]:
+            if float(i['balance']) > 0.00000001:
+                self.vbalance[i['currency']] = float(i['balance'])
+        for i in self.vbalance.keys():
+           self.get_trade(i)
 
     def get_balance(self):
         self.update_data()
-        for k,v in self.vbalance.iteritems():
-            print "%-4s %-6s %s" % (k, v[0], v[1])
-        return
+        self.cnt_usdt = 0
+        btcprice = self.price['btcusdt']
+        s = "\n"
+        for k in self.vbalance.keys():
+            p = self.price[k+'usdt']
+            t = self.vbalance[k] * p
+            self.cnt_usdt += t
+            s+= "%6s %8.2f %8.2f %8.3f\n" % (k, p, t, p/btcprice*1000)
+        s += "\n%.2f %.2f\n" % (self.cnt_usdt,self.cnt_usdt * 6.4)
+        self.logger.write(s)
+        return s
 
     def orderlist_submitted(self):
         d = self.c.root.orders_list("btcusdt", "submitted")
@@ -79,7 +89,12 @@ class Trade(object):
         d = self.c.root.send_order(amount, "", "btcusdt", "buy-limit", price)
 
     def get_trade(self, symbol):
-        return self.c.root.get_trade(symbol)
+        d = self.c.root.get_trade(symbol+"usdt")
+        v = 0
+        if d['status'] == 'ok':
+            v = d['tick']['data'][0]['price']
+            self.price[symbol+'usdt'] = v
+        return v
 
     def __del__(self):
         self.logger.close()
@@ -99,7 +114,7 @@ class MyCmd(Cmd):
 
     def do_balance(self, args):
         """ Acount balance """
-        self.trade.get_balance()
+        print self.trade.get_balance()
 
     def do_order(self, args):
         """ Order list """
@@ -114,12 +129,8 @@ class MyCmd(Cmd):
 
     def do_trade(self, args):
         """ trade tick """
-        if len(args) == 0:
-            args = 'btcusdt'
         d = self.trade.get_trade(args);
-        if d['status'] == 'ok':
-            v = d['tick']['data']
-            print v[0]['price']
+        print d
 
 if __name__ == "__main__":
 
